@@ -1,6 +1,6 @@
 console.log('[DevSoutinho] Flappy Bird');
 
-
+let frames = 0;
 
 const som_HIT = new Audio();
 som_HIT.src = './efeitos/hit.wav';
@@ -43,31 +43,47 @@ const planoDeFundo = {
 };
 
 // [Chao]
-const chao = {
-  spriteX: 0,
-  spriteY: 610,
-  largura: 224,
-  altura: 112,
-  x: 0,
-  y: canvas.height - 112,
-  desenha() {
-    contexto.drawImage(
-      sprites,
-      chao.spriteX, chao.spriteY,
-      chao.largura, chao.altura,
-      chao.x, chao.y,
-      chao.largura, chao.altura,
-    );
+function criaChao() {
+  const chao = {
+    spriteX: 0,
+    spriteY: 610,
+    largura: 224,
+    altura: 112,
+    x: 0,
+    y: canvas.height - 112,
+    atualiza(){
+      const movimentoDoChao = 1;
+      const repeteEm = chao.largura / 2
+      const movimentacao = chao.x - movimentoDoChao;
+      /*
+       * calculo para pegar a movimentação de objetos, o resto da divisão % cria um numero magico, no caso, quando o repeteEm recebe a divisão da largura do chão por 2, dando 112, ele estipula o momento de resetar o elemento, e o resto da divisião vai sempre até 111, independente do valor contado no console.log, podendo isso ser parecido em outros lugares, pegando a largura do objeto e dividindo pela metade para conseguir um possivel numero para uma tarefa, talvez, esse valor valha só em situações similares a essa 
+       */
 
-    contexto.drawImage(
-      sprites,
-      chao.spriteX, chao.spriteY,
-      chao.largura, chao.altura,
-      (chao.x + chao.largura), chao.y,
-      chao.largura, chao.altura,
-    );
-  },
-};
+      // console.log(movimentacao)
+
+      chao.x = movimentacao % repeteEm
+    },
+    desenha() {
+      contexto.drawImage(
+        sprites,
+        chao.spriteX, chao.spriteY,
+        chao.largura, chao.altura,
+        chao.x, chao.y,
+        chao.largura, chao.altura,
+      );
+  
+      contexto.drawImage(
+        sprites,
+        chao.spriteX, chao.spriteY,
+        chao.largura, chao.altura,
+        (chao.x + chao.largura), chao.y,
+        chao.largura, chao.altura,
+      );
+    },
+  };
+  return chao;
+}
+
 
 function fazColizão(flappyBird, chao) {
   const flappyBirdY = flappyBird.y + flappyBird.altura;
@@ -100,7 +116,7 @@ function criaFlappyBird() {
     velocidade: 0,
   
     atualiza() {
-      if(fazColizão(flappyBird, chao)){
+      if(fazColizão(flappyBird, globais.chao)){
         console.log('Fez Colisão');
         som_HIT.play();
         setTimeout(() => {
@@ -114,10 +130,26 @@ function criaFlappyBird() {
       // console.log(flappyBird.velocidade);
       flappyBird.y = flappyBird.y + flappyBird.velocidade;
     },
+    movimentos: [
+      {spriteX: 0, spriteY: 0,}, // asa pra cima
+      {spriteX: 0, spriteY: 26,}, // asa pra meio
+      {spriteX: 0, spriteY: 52,}, // asa pra baixo
+    ],
+    frameAtual: 0,
+    atualizaOFrameAtual() {
+      const baseDoIncremento = 1;
+      const incremento = baseDoIncremento + flappyBird.frameAtual;
+      const baseRepeticao = flappyBird.movimentos.length;
+      flappyBird.frameAtual = incremento % baseRepeticao
+      console.log(frames)
+    },
     desenha() {
+      flappyBird.atualizaOFrameAtual();
+      const { spriteX, spriteY } = flappyBird.movimentos[flappyBird.frameAtual];
+
       contexto.drawImage(
         sprites,
-        flappyBird.spriteX, flappyBird.spriteY, // Sprite X, Sprite Y
+        spriteX, spriteY, // Sprite X, Sprite Y
         flappyBird.largura, flappyBird.altura, // Tamanho do recorte na sprite
         flappyBird.x, flappyBird.y,
         flappyBird.largura, flappyBird.altura,
@@ -166,18 +198,20 @@ const Telas = {
   INICIO: {
     inicializa() {
       globais.flappyBird = criaFlappyBird();
+      globais.chao = criaChao();
     },
     desenha() {
       planoDeFundo.desenha();
-      chao.desenha();
       globais.flappyBird.desenha();
+
+      globais.chao.desenha();
       mensagemGetReady.desenha();
     },
     click() {
       mudaParaTela(Telas.JOGO);
     },
     atualiza() {
-
+      globais.chao.atualiza();
     }
   }
 }
@@ -185,7 +219,7 @@ const Telas = {
 Telas.JOGO = {
   desenha() {
     planoDeFundo.desenha();
-    chao.desenha();
+    globais.chao.desenha();
     globais.flappyBird.desenha();
   },
   click() {
@@ -193,6 +227,7 @@ Telas.JOGO = {
   },
   atualiza() {
     globais.flappyBird.atualiza();
+    globais.chao.atualiza();
   }
 }
 
@@ -202,7 +237,7 @@ function loop() {
   telaAtiva.atualiza();
 
 
-
+  frames = frames + 1;
   requestAnimationFrame(loop);
 }
 
