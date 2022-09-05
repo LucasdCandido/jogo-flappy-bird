@@ -134,14 +134,24 @@ function criaFlappyBird() {
       {spriteX: 0, spriteY: 0,}, // asa pra cima
       {spriteX: 0, spriteY: 26,}, // asa pra meio
       {spriteX: 0, spriteY: 52,}, // asa pra baixo
+      {spriteX: 0, spriteY: 26,}, // asa pra meio
     ],
     frameAtual: 0,
     atualizaOFrameAtual() {
-      const baseDoIncremento = 1;
-      const incremento = baseDoIncremento + flappyBird.frameAtual;
-      const baseRepeticao = flappyBird.movimentos.length;
-      flappyBird.frameAtual = incremento % baseRepeticao
-      console.log(frames)
+      // const baseDoIncremento = 1;
+      // const incremento = baseDoIncremento + flappyBird.frameAtual;
+      // const baseRepeticao = flappyBird.movimentos.length;
+      // flappyBird.frameAtual = incremento % baseRepeticao
+      // console.log(frames)
+      const intervaloDeFrames = 10;
+      const passouOIntervalo = frames % intervaloDeFrames === 0;
+
+      if(passouOIntervalo) {
+        const baseDoIncremento = 1;
+        const incremento = baseDoIncremento + flappyBird.frameAtual;
+        const baseRepeticao = flappyBird.movimentos.length;
+        flappyBird.frameAtual = incremento % baseRepeticao
+      }
     },
     desenha() {
       flappyBird.atualizaOFrameAtual();
@@ -181,6 +191,44 @@ const mensagemGetReady = {
   }
 }
 
+/// [Canos]
+function criaCanos() {
+  const canos = {
+    largura: 52,
+    altura: 400,
+    chao: {
+      spriteX: 0,
+      spriteY: 169,
+    },
+    ceu: {
+      spriteX: 52,
+      spriteY: 169,
+    },
+    espaco: 80,
+    desenha() {
+      const canoCeuX = 220;
+      const canoCeuY = 0;
+      // [Cano do Ceu]
+      contexto.drawImage(
+        sprites,
+        canos.ceu.spriteX, canos.ceu.spriteY,
+        canos.largura, canos.altura,
+        canoCeuX, canoCeuY,
+        canos.largura, canoCeuY,
+      )
+
+      const canoChaoX = 220;
+      const canoChaoY = 0;
+      contexto.drawImage(
+        sprites,
+        
+      )
+    },
+  }
+
+  return canos;
+}
+
 
 /**
  * [Telas]
@@ -199,12 +247,14 @@ const Telas = {
     inicializa() {
       globais.flappyBird = criaFlappyBird();
       globais.chao = criaChao();
+      globais.canos = criaCanos();
     },
     desenha() {
       planoDeFundo.desenha();
       globais.flappyBird.desenha();
 
       globais.chao.desenha();
+      globais.canos.desenha();
       mensagemGetReady.desenha();
     },
     click() {
